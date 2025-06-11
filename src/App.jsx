@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-// Use the fixDropdowns utility to extract team names
-import { getTeamNames, formatTeamDisplay } from './fixDropdowns';
-
 // --- HELPER FUNCTION: DYNAMIC COMMENTARY GENERATION ---
 const generateCommentary = (ball) => {
     if (ball.is_wicket === 1) {
@@ -23,92 +20,39 @@ const generateCommentary = (ball) => {
     return `Dot ball. ${ball.bowler} to ${ball.batter}, no run.`;
 };
 
-// --- MOCK DATA FOR TESTING ---
+
+// --- MOCK DATA INTEGRATION ---
+// Data from your Google Drive link for the 2008 and 2023 seasons has been integrated.
+// For a full-scale app, this would be loaded from a server/API.
 const mockIplData = {
   "2008": [
     {
-      "match_id": 335982,
-      "description": "RCB vs KKR - 2008 Match 1",
-      "innings": [
-        {
-          "inning": 1,
-          "batting_team": "Kolkata Knight Riders",
-          "bowling_team": "Royal Challengers Bangalore",
-          "deliveries": [
+      "match": "RCB vs KKR - 2008 Match 1",
+      "match_id": "335982",
+      "deliveries": [
             {"ID":61,"season":2008,"match_id":335982,"inning":1,"over":0,"ball":1,"batter":"SC Ganguly","bowler":"P Kumar","non_striker":"BB McCullum","batsman_runs":0,"extra_runs":1,"total_runs":1,"extras_type":"legbyes","is_wicket":0,"player_dismissed":"NA","dismissal_kind":"NA","fielder":"NA"},
             {"ID":62,"season":2008,"match_id":335982,"inning":1,"over":0,"ball":2,"batter":"BB McCullum","bowler":"P Kumar","non_striker":"SC Ganguly","batsman_runs":0,"extra_runs":0,"total_runs":0,"extras_type":"NA","is_wicket":0,"player_dismissed":"NA","dismissal_kind":"NA","fielder":"NA"},
             {"ID":68,"season":2008,"match_id":335982,"inning":1,"over":1,"ball":2,"batter":"BB McCullum","bowler":"Z Khan","non_striker":"SC Ganguly","batsman_runs":4,"extra_runs":0,"total_runs":4,"extras_type":"NA","is_wicket":0,"player_dismissed":"NA","dismissal_kind":"NA","fielder":"NA"},
             {"ID":69,"season":2008,"match_id":335982,"inning":1,"over":1,"ball":3,"batter":"BB McCullum","bowler":"Z Khan","non_striker":"SC Ganguly","batsman_runs":4,"extra_runs":0,"total_runs":4,"extras_type":"NA","is_wicket":0,"player_dismissed":"NA","dismissal_kind":"NA","fielder":"NA"},
-            {"ID":72,"season":2008,"match_id":335982,"inning":1,"over":1,"ball":6,"batter":"BB McCullum","bowler":"Z Khan","non_striker":"SC Ganguly","batsman_runs":6,"extra_runs":0,"total_runs":6,"extras_type":"NA","is_wicket":0,"player_dismissed":"NA","dismissal_kind":"NA","fielder":"NA"}
-          ]
-        },
-        {
-          "inning": 2,
-          "batting_team": "Royal Challengers Bangalore",
-          "bowling_team": "Kolkata Knight Riders",
-          "deliveries": [
+            {"ID":72,"season":2008,"match_id":335982,"inning":1,"over":1,"ball":6,"batter":"BB McCullum","bowler":"Z Khan","non_striker":"SC Ganguly","batsman_runs":6,"extra_runs":0,"total_runs":6,"extras_type":"NA","is_wicket":0,"player_dismissed":"NA","dismissal_kind":"NA","fielder":"NA"},
             {"ID":183,"season":2008,"match_id":335982,"inning":2,"over":2,"ball":2,"batter":"V Kohli","bowler":"AB Dinda","non_striker":"W Jaffer","batsman_runs":0,"extra_runs":0,"total_runs":0,"extras_type":"NA","is_wicket":1,"player_dismissed":"V Kohli","dismissal_kind":"bowled","fielder":"NA"},
             {"ID":195,"season":2008,"match_id":335982,"inning":2,"over":4,"ball":2,"batter":"MV Boucher","bowler":"AB Dinda","non_striker":"W Jaffer","batsman_runs":0,"extra_runs":1,"total_runs":1,"extras_type":"wides","is_wicket":0,"player_dismissed":"NA","dismissal_kind":"NA","fielder":"NA"}
-          ]
-        }
       ]
     }
   ],
   "2023": [
     {
-      "match_id": 1370353,
-      "description": "GT vs CSK - 2023 Final",
-      "innings": [
-        {
-          "inning": 1,
-          "batting_team": "Gujarat Titans",
-          "bowling_team": "Chennai Super Kings",
-          "deliveries": [
+      "match": "GT vs CSK - 2023 Final",
+      "match_id": "1370353",
+      "deliveries": [
             { "ID": 1, "season": 2023, "match_id": 1370353, "inning": 1, "batting_team": "Gujarat Titans", "bowling_team": "Chennai Super Kings", "over": 0, "ball": 1, "batter": "WP Saha", "bowler": "DL Chahar", "non_striker": "Shubman Gill", "batsman_runs": 0, "extra_runs": 0, "total_runs": 0, "extras_type": "NA", "is_wicket": 0, "player_dismissed": "NA", "dismissal_kind": "NA", "fielder": "NA" },
             { "ID": 2, "season": 2023, "match_id": 1370353, "inning": 1, "batting_team": "Gujarat Titans", "bowling_team": "Chennai Super Kings", "over": 0, "ball": 2, "batter": "WP Saha", "bowler": "DL Chahar", "non_striker": "Shubman Gill", "batsman_runs": 4, "extra_runs": 0, "total_runs": 4, "extras_type": "NA", "is_wicket": 0, "player_dismissed": "NA", "dismissal_kind": "NA", "fielder": "NA" },
             { "ID": 5, "season": 2023, "match_id": 1370353, "inning": 1, "batting_team": "Gujarat Titans", "bowling_team": "Chennai Super Kings", "over": 6, "ball": 6, "batter": "Shubman Gill", "bowler": "RA Jadeja", "non_striker": "WP Saha", "batsman_runs": 0, "extra_runs": 0, "total_runs": 0, "extras_type": "NA", "is_wicket": 1, "player_dismissed": "Shubman Gill", "dismissal_kind": "stumped", "fielder": "MS Dhoni" },
-          ]
-        },
-        {
-          "inning": 2,
-          "batting_team": "Chennai Super Kings",
-          "bowling_team": "Gujarat Titans",
-           "deliveries": [
-            { "ID": 6, "season": 2023, "match_id": 1370353, "inning": 2, "batting_team": "Chennai Super Kings", "bowling_team": "Gujarat Titans", "over": 14, "ball": 6, "batter": "RA Jadeja", "bowler": "MM Sharma", "non_striker": "S Dube", "batsman_runs": 4, "extra_runs": 0, "total_runs": 4, "extras_type": "NA", "is_wicket": 0, "player_dismissed": "NA", "dismissal_kind": "NA", "fielder": "NA" },
-          ]
-        }
+            { "ID": 6, "season": 2023, "match_id": 1370353, "inning": 2, "batting_team": "Chennai Super Kings", "bowling_team": "Gujarat Titans", "over": 14, "ball": 6,"batter":"RA Jadeja","bowler":"MM Sharma","non_striker":"S Dube","batsman_runs":4,"extra_runs":0,"total_runs":4,"extras_type":"NA","is_wicket":0,"player_dismissed":"NA","dismissal_kind":"NA","fielder":"NA"}
       ]
     }
   ]
 };
-
-// Helper function to get display name for a match
-const getMatchDisplayName = (match) => {
-  if (!match) {
-    console.log("No match data provided");
-    return "Unknown match";
-  }
-  
-  // Check different possible formats
-  if (match.innings && match.innings[0]) {
-    // Format: match object with innings
-    return `${match.innings[0].batting_team} v ${match.innings[0].bowling_team}`;
-  } else if (Array.isArray(match) && match[0]) {
-    // Format: array of deliveries
-    return `${match[0].batting_team} v ${match[0].bowling_team}`;
-  } else if (match.description) {
-    // Legacy format with description
-    console.log(`Using description field for match: ${match.description}`);
-    return match.description;
-  }
-  
-  // Fallback
-  return `Match ${match.match_id || 'Unknown'}`;
-};
-
-// --- DATA INTEGRATION ---
-// API URL constant (can be outside the component)
-const API_URL = 'http://localhost:3001'; // Your server URL
 
 // --- HELPER COMPONENTS ---
 const Scoreboard = ({ gameState }) => {
@@ -131,23 +75,17 @@ const Scoreboard = ({ gameState }) => {
     );
 };
 
-// Import the team name utility functions
-import { getTeamNames, formatTeamDisplay } from './fixDropdowns';
+const LoadingIndicator = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-gray-800 rounded-lg p-6 flex flex-col items-center">
+            <div className="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-white text-lg">Loading...</p>
+        </div>
+    </div>
+);
 
 // --- MAIN APP COMPONENT ---
 export default function App() {
-    console.log('App component rendering');
-    try {
-        console.log('mockIplData available:', !!mockIplData);
-        console.log('mockIplData seasons:', Object.keys(mockIplData));
-    } catch (err) {
-        console.error('Error accessing mockIplData:', err);
-    }
-    
-    // All state hooks inside the component function
-    const [seasons, setSeasons] = useState([]);
-    const [matchesForSeason, setMatchesForSeason] = useState([]);
-    const [isLoading, setIsLoading] = useState(false); // For loading indicators
     const [selectedSeason, setSelectedSeason] = useState("");
     const [selectedMatch, setSelectedMatch] = useState("");
     const [gameData, setGameData] = useState(null);
@@ -159,206 +97,246 @@ export default function App() {
     const [message, setMessage] = useState("Select a season and match to start!");
     const [isGameOver, setIsGameOver] = useState(false);
 
-    // --- Logic for handling test mode vs. real data ---
-    // Check if the environment variable is defined, if not default to test mode
-    const isTestMode = import.meta.env.VITE_APP_MODE ? import.meta.env.VITE_APP_MODE === 'test' : true;
+    // Check if the environment variable is defined, if not default to false (production mode)
+    const isTestMode = import.meta.env.VITE_APP_MODE === 'test' ? true : false;
+    const API_URL = 'http://localhost:3001'; // Your server URL
     
-    // Use memoized values for UI rendering - only used in test mode
-    const availableSeasons = useMemo(() => isTestMode ? Object.keys(mockIplData).sort((a,b) => b-a) : seasons, [isTestMode, seasons]); // Sort seasons descending
-    const availableMatchesForSeason = useMemo(() => {
-        let result = [];
-        if (isTestMode) {
-            result = selectedSeason ? mockIplData[selectedSeason] : [];
-            // Debug logging for test mode data
-            if (result.length > 0) {
-                console.log(`DETAILED TEST MODE DATA CHECK for ${selectedSeason}:`);
-                result.forEach((match, idx) => {
-                    console.log(`Match ${idx + 1}:`, {
-                        match_id: match.match_id,
-                        description: match.description,
-                        hasInnings: !!match.innings,
-                        inningsCount: match.innings ? match.innings.length : 0,
-                        firstInning: match.innings && match.innings[0] ? {
-                            batting_team: match.innings[0].batting_team,
-                            bowling_team: match.innings[0].bowling_team
-                        } : 'None'
-                    });
-                });
-            }
-        } else {
-            result = matchesForSeason;
-        }
-        console.log(`Available matches for season ${selectedSeason}:`, result);
-        return result;
-    }, [isTestMode, selectedSeason, matchesForSeason]);
+    const [seasons, setSeasons] = useState([]);
+    const [matchesForSeason, setMatchesForSeason] = useState([]);
+    const [isLoading, setIsLoading] = useState(false); // For loading indicators
 
-    // Effect hook to update game state when ball index changes
+    // Use memoized values for UI rendering - only used in test mode
+    const availableSeasons = useMemo(() => 
+        isTestMode ? Object.keys(mockIplData).sort((a,b) => b-a) : seasons, 
+        [isTestMode, seasons]
+    );
+    
+    // memoized matches for selected season
+    const availableMatchesForSeason = useMemo(() => 
+        isTestMode ? (selectedSeason ? mockIplData[selectedSeason] || [] : []) : matchesForSeason, 
+        [isTestMode, selectedSeason, matchesForSeason]
+    );
+
     useEffect(() => {
         if (gameData) {
             updateGameState();
         }
     }, [currentBallIndex, gameData, currentInningIndex]);
 
-    // 1. Fetch all available seasons when the app loads
+    // Fetch seasons when component mounts
     useEffect(() => {
         if (isTestMode) {
-            // In test mode, use mock seasons
-            setSeasons(Object.keys(mockIplData));
+            // In test mode, use the mock data
+            console.log("Running in TEST mode with mockIplData");
             return;
         }
 
+        console.log("Running in API mode - fetching seasons from server");
         setIsLoading(true);
         fetch(`${API_URL}/api/seasons`)
             .then(res => res.json())
             .then(data => {
-                setSeasons(data.sort((a,b) => b-a));
+                console.log("Received seasons from API:", data);
+                setSeasons(data.sort((a, b) => b - a)); // Sort descending
                 setIsLoading(false);
             })
             .catch(err => {
-                console.error(err);
+                console.error("Error fetching seasons:", err);
                 setIsLoading(false);
             });
     }, [isTestMode]);
 
-    // 2. Fetch matches when a season is selected
+    // Fetch matches for the selected season
     useEffect(() => {
         if (!selectedSeason) {
-            console.log("No season selected, clearing matches");
-            setMatchesForSeason([]);
-            return;
-        };
-        if (isTestMode){
-            const mockMatches = mockIplData[selectedSeason];
-            console.log(`Setting ${mockMatches?.length || 0} matches for test mode, season ${selectedSeason}`);
-            // Verify we have the expected structure
-            if (mockMatches && mockMatches.length > 0) {
-                console.log("Example match structure:", mockMatches[0]);
-                if (mockMatches[0].innings && mockMatches[0].innings[0]) {
-                    console.log("Team names from first match:", {
-                        batting_team: mockMatches[0].innings[0].batting_team,
-                        bowling_team: mockMatches[0].innings[0].bowling_team
-                    });
-                }
-            }
-            setMatchesForSeason(mockMatches || []);
             return;
         }
 
+        if (isTestMode) {
+            // In test mode, the matchesForSeason is set via the availableMatchesForSeason memo
+            console.log(`TEST mode - Using mock data for season ${selectedSeason}`);
+            return;
+        }
+
+        console.log(`API mode - Fetching matches for season ${selectedSeason}`);
         setIsLoading(true);
         fetch(`${API_URL}/api/matches/${selectedSeason}`)
             .then(res => res.json())
             .then(data => {
-                console.log(`API mode - Fetched matches for season ${selectedSeason}:`, data);
-                
-                // Process the data based on its format
-                if (data && data.length > 0) {
-                    console.log("Data structure check:", {
-                        isArray: Array.isArray(data),
-                        firstItemType: typeof data[0],
-                        isFirstItemArray: Array.isArray(data[0]),
-                        hasInnings: data[0] && data[0].innings !== undefined,
-                        hasMatchId: data[0] && data[0].match_id !== undefined,
-                        hasBattingTeam: data[0] && data[0].batting_team !== undefined,
-                        hasBattingTeamValue: data[0] && data[0].batting_team
-                    });
-                    
-                    if (Array.isArray(data[0])) {
-                        // Data is grouped by matches already
-                        console.log("Data is already grouped by matches");
-                        setMatchesForSeason(data);
-                    } else if (data[0] && data[0].match_id) {
-                        // Data is in raw format (flat array of deliveries)
-                        console.log("Processing raw delivery data:", data[0]);
-                        
-                        // Group by match_id
-                        const matchMap = {};
-                        data.forEach(ball => {
-                            const matchId = ball.match_id;
-                            if (!matchMap[matchId]) {
-                                matchMap[matchId] = [];
-                            }
-                            matchMap[matchId].push(ball);
-                        });
-                        
-                        console.log(`Found ${Object.keys(matchMap).length} unique matches`);
-                        
-                        // Either keep as arrays of balls (simpler), or group into innings structure
-                        const keepSimpleFormat = true; // Set to true to keep as arrays for simpler access
-                        
-                        if (keepSimpleFormat) {
-                            // Just group by match_id, keep as arrays of deliveries
-                            const simpleProcessedData = Object.entries(matchMap).map(([matchId, deliveries]) => {
-                                // Sort deliveries by inning, over, ball for proper game flow
-                                const sortedDeliveries = [...deliveries].sort((a, b) => {
-                                    if (a.inning !== b.inning) return a.inning - b.inning;
-                                    if (a.over !== b.over) return a.over - b.over;
-                                    return a.ball - b.ball;
-                                });
-                                
-                                if (sortedDeliveries.length > 0) {
-                                    console.log(`Match ${matchId} - Team names:`, {
-                                        batting_team: sortedDeliveries[0].batting_team, 
-                                        bowling_team: sortedDeliveries[0].bowling_team
-                                    });
-                                }
-                                
-                                return sortedDeliveries;
-                            });
-                            
-                            console.log(`Processed ${simpleProcessedData.length} matches in simple format`);
-                            setMatchesForSeason(simpleProcessedData);
-                        } else {
-                            // Convert to array of structured matches with innings
-                            const processedData = Object.keys(matchMap).map(matchId => {
-                                const matchDeliveries = matchMap[matchId];
-                                // Group deliveries by innings
-                                const innings = {};
-                                matchDeliveries.forEach(d => {
-                                    if (!innings[d.inning]) {
-                                        innings[d.inning] = {
-                                            inning: d.inning,
-                                            batting_team: d.batting_team,
-                                            bowling_team: d.bowling_team,
-                                            deliveries: []
-                                        };
-                                    }
-                                    innings[d.inning].deliveries.push(d);
-                                });
-                                
-                                return {
-                                    match_id: parseInt(matchId),
-                                    innings: Object.values(innings)
-                                };
-                            });
-                            
-                            console.log(`Processed ${processedData.length} matches in structured format`);
-                            setMatchesForSeason(processedData);
-                        }
-                    } else {
-                        // Data is already in the expected format
-                        console.log("Data is already in expected format");
-                        setMatchesForSeason(data);
+                console.log("Received matches from API:", data);
+                // Add a formatted match display name if not provided by the API
+                const formattedMatches = data.map(match => {
+                    if (!match.match && match.match_id) {
+                        // Create a default match name if none exists
+                        match.match = `Match ${match.match_id} (Season ${selectedSeason})`;
                     }
-                } else {
-                    // Empty or invalid data
-                    console.log("No valid match data received");
-                    setMatchesForSeason([]);
-                }
+                    return match;
+                });
+                setMatchesForSeason(formattedMatches);
                 setIsLoading(false);
             })
             .catch(err => {
-                console.error(err);
+                console.error(`Error fetching matches for season ${selectedSeason}:`, err);
                 setIsLoading(false);
             });
     }, [selectedSeason, isTestMode]);
 
-    // Function to update the game state based on current ball
+    const handleStartGame = () => {
+        if (!selectedMatch) {
+            setMessage("Please select a match.");
+            return;
+        }
+        
+        // Test mode - use mock data directly
+        if (isTestMode) {
+            // The selected match might have suffix (match_id) appended, so extract the match ID from the selectedMatch
+            // or look for a partial match of the team names
+            let matchData;
+            
+            // First try to find by direct match
+            matchData = availableMatchesForSeason.find(m => (m.match || m.description) === selectedMatch);
+            
+            // If not found, try to match without the ID suffix
+            if (!matchData && selectedMatch.includes('(')) {
+                const matchNameWithoutId = selectedMatch.split(' (')[0];
+                matchData = availableMatchesForSeason.find(m => 
+                    (m.match && m.match.includes(matchNameWithoutId)) || 
+                    (m.description && m.description.includes(matchNameWithoutId))
+                );
+            }
+            
+            // If still not found, try matching by match_id
+            if (!matchData && selectedMatch.includes('(')) {
+                const matchIdInParentheses = selectedMatch.match(/\(([^)]+)\)/);
+                if (matchIdInParentheses && matchIdInParentheses[1]) {
+                    const matchId = matchIdInParentheses[1];
+                    matchData = availableMatchesForSeason.find(m => m.match_id?.toString() === matchId);
+                }
+            }
+            
+            if (!matchData) {
+                setMessage("Error: Could not find match data. Please try another match.");
+                return;
+            }
+            
+            // Process the match data into the expected format with innings structure
+            const processedData = processMatchData(matchData);
+            
+            setGameData(processedData);
+            setCurrentBallIndex(0);
+            setCurrentInningIndex(0);
+            setUserPoints(50);
+            setPrediction(null);
+            setIsGameOver(false);
+            setMessage(`Game started: ${matchData.match || matchData.description || `Match ${selectedMatch}`}. Make your prediction or press 'Bowl Next Ball' to continue.`);
+            return;
+        }
+        
+        // API mode - fetch match data from server
+        // The selected match might have suffix (match_id) appended, so we need to extract it
+        let matchInfo;
+        
+        // First try to find by direct match
+        matchInfo = matchesForSeason.find(m => (m.match || m.description) === selectedMatch);
+        
+        // If not found, try to match without the ID suffix
+        if (!matchInfo && selectedMatch.includes('(')) {
+            const matchNameWithoutId = selectedMatch.split(' (')[0];
+            matchInfo = matchesForSeason.find(m => 
+                (m.match && m.match.includes(matchNameWithoutId)) || 
+                (m.description && m.description.includes(matchNameWithoutId))
+            );
+        }
+        
+        // If still not found, try matching by match_id
+        if (!matchInfo && selectedMatch.includes('(')) {
+            const matchIdInParentheses = selectedMatch.match(/\(([^)]+)\)/);
+            if (matchIdInParentheses && matchIdInParentheses[1]) {
+                const matchId = matchIdInParentheses[1];
+                matchInfo = matchesForSeason.find(m => m.match_id?.toString() === matchId);
+            }
+        }
+        
+        if (!matchInfo) {
+            setMessage("Error: Could not find match data. Please try another match.");
+            return;
+        }
+        const matchId = matchInfo.match_id;
+
+        console.log(`API mode - Fetching data for match ${matchId}`);
+        setIsLoading(true);
+        
+        fetch(`${API_URL}/api/data/${selectedSeason}/${matchId}`)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch match data (${res.status})`);
+                }
+                return res.json();
+            })
+            .then(responseData => {
+                console.log("Received match data from API:", responseData);
+                
+                // Get match metadata
+                const matchMetadata = matchesForSeason.find(m => m.match_id?.toString() === matchId);
+                let matchData;
+                
+                // Check what format the response is in
+                if (Array.isArray(responseData)) {
+                    // If it's an array, it's probably the raw deliveries
+                    matchData = {
+                        match_id: matchId,
+                        match: matchMetadata?.match,
+                        description: matchMetadata?.description,
+                        deliveries: responseData
+                    };
+                } else if (responseData.deliveries) {
+                    // If it has a deliveries property, it's already structured
+                    matchData = {
+                        ...responseData,
+                        match: responseData.match || matchMetadata?.match,
+                        description: responseData.description || matchMetadata?.description
+                    };
+                } else if (responseData.match) {
+                    // If it has a match property, it might be a different format
+                    matchData = responseData;
+                } else {
+                    // Unexpected format, try to adapt
+                    console.warn("Unexpected match data format:", responseData);
+                    matchData = {
+                        match_id: matchId,
+                        match: matchMetadata?.match,
+                        description: matchMetadata?.description,
+                        deliveries: responseData.data || responseData // Try to extract data or use as is
+                    };
+                }
+                
+                // Process into the proper format
+                const processedData = processMatchData(matchData);
+                
+                if (!processedData || !processedData.innings || processedData.innings.length === 0) {
+                    throw new Error("Failed to process match data into required format");
+                }
+                
+                setGameData(processedData);
+                setCurrentBallIndex(0);
+                setCurrentInningIndex(0);
+                setUserPoints(50);
+                setPrediction(null);
+                setIsGameOver(false);
+                
+                const matchName = matchMetadata?.match || matchMetadata?.description || `Match ${matchId}`;
+                setMessage(`Game started: ${matchName}. Make your prediction or press 'Bowl Next Ball' to continue.`);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error(`Error fetching match data for match ${selectedMatch}:`, err);
+                setMessage(`Error: Could not load match data: ${err.message}`);
+                setIsLoading(false);
+            });
+    };
+
     const updateGameState = () => {
-        if (!gameData || !gameData.innings || gameData.innings.length === 0) return;
-        
         const inningData = gameData.innings[currentInningIndex];
-        if (!inningData || !inningData.deliveries) return;
-        
         const deliveries = inningData.deliveries;
         
         let score = 0;
@@ -392,152 +370,7 @@ export default function App() {
             battingTeam: inningData.batting_team
         });
     };
-
-    // The handleStartGame function to start a match
-    const handleStartGame = () => {
-        if (!selectedMatch || !selectedSeason) {
-            setMessage("Please select a season and match.");
-            return;
-        }
-        
-        if (isTestMode){
-            // In test mode, use the mock data
-            const matchData = matchesForSeason.find(m => m.match_id.toString() === selectedMatch);
-            setGameData(matchData);
-            setCurrentBallIndex(0);
-            setCurrentInningIndex(0);
-            setUserPoints(50);
-            setPrediction(null);
-            setIsGameOver(false);
-            // Extract team information for display
-            let displayName = "";
-            
-            if (matchData.innings && matchData.innings[0]) {
-              // Use innings data if available
-              displayName = `${matchData.innings[0].batting_team} v ${matchData.innings[0].bowling_team}`;
-            } else if (Array.isArray(matchData) && matchData[0]) {
-              // If matchData is an array of deliveries (raw data file format)
-              displayName = `${matchData[0].batting_team} v ${matchData[0].bowling_team}`;
-            } else if (matchData.description) {
-              // Legacy support for mock data with description
-              const byVs = matchData.description.split(' vs ');
-              const byVS = matchData.description.split(' VS ');
-              const byV = matchData.description.split(' v ');
-              
-              if (byVs.length === 2) {
-                displayName = `${byVs[0].trim()} v ${byVs[1].split(' - ')[0].trim()}`;
-              } else if (byVS.length === 2) {
-                displayName = `${byVS[0].trim()} v ${byVS[1].split(' - ')[0].trim()}`;
-              } else if (byV.length === 2) {
-                displayName = `${byV[0].trim()} v ${byV[1].split(' - ')[0].trim()}`;
-              } else {
-                displayName = matchData.description;
-              }
-            } else {
-              // Fallback
-              displayName = `Match ${matchData.match_id}`;
-            }
-                
-            console.log(`Test Mode - Game started: ${displayName}`);
-            setMessage(`Game started: ${displayName}. Make your prediction or press 'Bowl Next Ball' to continue.`);
-            return;
-        }
-
-        setIsLoading(true);
-        fetch(`${API_URL}/api/data/${selectedSeason}/${selectedMatch}`)
-            .then(res => res.json())
-            .then(deliveries => {
-                console.log("API Mode - Raw deliveries data received:", deliveries.length, "deliveries");
-                
-                // Find the selected match from the available matches
-                let matchData;
-                
-                // Look for the match in our prepared matchesForSeason array
-                const matchFromSeason = matchesForSeason.find(m => {
-                    if (m.match_id && m.match_id.toString() === selectedMatch) {
-                        return true;
-                    } else if (Array.isArray(m) && m.length > 0 && m[0].match_id.toString() === selectedMatch) {
-                        return true;
-                    }
-                    return false;
-                });
-                
-                console.log("Found match in available matches:", matchFromSeason ? "yes" : "no");
-                
-                if (matchFromSeason) {
-                    // If we found the match in our processed data
-                    if (Array.isArray(matchFromSeason)) {
-                        // It's in raw array format, convert to structured format for game mechanics
-                        matchData = {
-                            match_id: selectedMatch,
-                            innings: groupDeliveriesIntoInnings(matchFromSeason)
-                        };
-                    } else {
-                        // It's already in structured format
-                        matchData = matchFromSeason;
-                    }
-                } else if (Array.isArray(deliveries) && deliveries.length > 0) {
-                    // Process the raw deliveries from the API
-                    matchData = {
-                        match_id: selectedMatch,
-                        innings: groupDeliveriesIntoInnings(deliveries)
-                    };
-                } else {
-                    // Fallback with minimal structure
-                    console.warn("No valid match data found, using empty structure");
-                    matchData = {
-                        match_id: selectedMatch,
-                        innings: []
-                    };
-                }
-                console.log("API Mode - Constructed match data:", matchData);
-                setGameData(matchData);
-                setCurrentBallIndex(0);
-                setCurrentInningIndex(0);
-                setUserPoints(50);
-                setPrediction(null);
-                setIsGameOver(false);
-                
-                // Extract team information for display
-                let displayName = "";
-                
-                if (matchData.innings && matchData.innings[0]) {
-                  // Use innings data if available
-                  displayName = `${matchData.innings[0].batting_team} v ${matchData.innings[0].bowling_team}`;
-                } else if (Array.isArray(matchData) && matchData[0]) {
-                  // If matchData is an array of deliveries (raw data file format)
-                  displayName = `${matchData[0].batting_team} v ${matchData[0].bowling_team}`;
-                } else if (matchData.description) {
-                  // Legacy support for mock data with description
-                  const byVs = matchData.description.split(' vs ');
-                  const byVS = matchData.description.split(' VS ');
-                  const byV = matchData.description.split(' v ');
-                  
-                  if (byVs.length === 2) {
-                    displayName = `${byVs[0].trim()} v ${byVs[1].split(' - ')[0].trim()}`;
-                  } else if (byVS.length === 2) {
-                    displayName = `${byVS[0].trim()} v ${byVS[1].split(' - ')[0].trim()}`;
-                  } else if (byV.length === 2) {
-                    displayName = `${byV[0].trim()} v ${byV[1].split(' - ')[0].trim()}`;
-                  } else {
-                    displayName = matchData.description;
-                  }
-                } else {
-                  // Fallback
-                  displayName = `Match ${matchData.match_id}`;
-                }
-                    
-                console.log(`API Mode - Game started: ${displayName}`);
-                setMessage(`Game started: ${displayName}. Make your prediction or press 'Bowl Next Ball' to continue.`);
-                setIsLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setIsLoading(false);
-            });
-    };
     
-    // Handle next ball action
     const handleNextBall = () => {
         if (isGameOver || !gameData) return;
 
@@ -554,42 +387,38 @@ export default function App() {
                 return;
             }
             
-            newPoints -= 1;
-            
+            // Determine the outcome of this ball
             let outcome = "";
             if (ball.is_wicket === 1) outcome = 'wicket';
             else if (ball.batsman_runs === 4) outcome = '4';
             else if (ball.batsman_runs === 6) outcome = '6';
 
             resultMessage = `Result: ${commentary} `;
+            
+            // Points logic: Only deduct points for wrong predictions, add bonus for correct predictions
             if (prediction === outcome) {
-                // Calculate net gain based on correct prediction
-                if (prediction === '4') {
-                    // For correct '4' prediction: cost+3 = -1+3 = +2 points
-                    newPoints = userPoints + 3;
-                    resultMessage += `Correct! You predicted a 4 and gained 2 points.`;
-                }
-                else if (prediction === '6') {
-                    // For correct '6' prediction: cost+6 = -1+6 = +5 points
-                    newPoints = userPoints + 6;
-                    resultMessage += `Correct! You predicted a 6 and gained 5 points.`;
-                }
-                else if (prediction === 'wicket') {
-                    // For correct 'wicket' prediction: cost+11 = -1+11 = +10 points
-                    newPoints = userPoints + 11;
-                    resultMessage += `Correct! You predicted a wicket and gained 10 points.`;
-                }
+                // Correct prediction bonus
+                let bonus = 0;
+                if (prediction === '4') bonus = 2;
+                else if (prediction === '6') bonus = 5;
+                else if (prediction === 'wicket') bonus = 10;
+                
+                newPoints += bonus;
+                resultMessage += `Correct prediction! You earned ${bonus} points!`;
             } else {
+                // Wrong prediction penalty
+                newPoints -= 1;
                 resultMessage += "Your prediction was incorrect. You lost 1 point.";
             }
         } else {
              resultMessage = `Result: ${commentary}`;
         }
 
+
         setUserPoints(newPoints);
         setMessage(resultMessage);
         
-        if (newPoints <= 0 && prediction) {
+        if (newPoints <= 0) {
             setIsGameOver(true);
             setMessage(resultMessage + " Game Over! You've run out of points.");
             return;
@@ -599,7 +428,6 @@ export default function App() {
         setPrediction(null);
     };
 
-    // Reset the game
     const resetGame = () => {
         setSelectedSeason("");
         setSelectedMatch("");
@@ -613,22 +441,86 @@ export default function App() {
         setIsGameOver(false);
     };
 
-    // Function to group deliveries by innings
-    function groupDeliveriesIntoInnings(deliveries) {
+    // Function to process match data into the expected format
+    const processMatchData = (matchData) => {
+        if (!matchData) {
+            console.error("No match data provided to processMatchData");
+            return null;
+        }
+        
+        console.log("Processing match data:", matchData);
+        
+        // Check if the data already has the innings structure
+        if (matchData.innings) {
+            console.log("Match already has innings structure");
+            return matchData;
+        }
+        
+        // Process raw deliveries data into innings
         const innings = {};
-        deliveries.forEach(d => {
-            if (!innings[d.inning]) {
-                innings[d.inning] = {
-                    inning: d.inning,
-                    batting_team: d.batting_team,
-                    bowling_team: d.bowling_team,
+        const deliveries = matchData.deliveries || [];
+        
+        if (deliveries.length === 0) {
+            console.warn("No deliveries found in match data");
+            console.error("Match data structure:", JSON.stringify(matchData, null, 2));
+        }
+        
+        console.log(`Processing ${deliveries.length} deliveries into innings structure`);
+        
+        // Group deliveries by innings
+        deliveries.forEach(delivery => {
+            const inningNum = delivery.inning;
+            if (!innings[inningNum]) {
+                innings[inningNum] = {
+                    inning: inningNum,
+                    batting_team: delivery.batting_team || `Batting Team (Inning ${inningNum})`,
+                    bowling_team: delivery.bowling_team || `Bowling Team (Inning ${inningNum})`,
                     deliveries: []
                 };
             }
-            innings[d.inning].deliveries.push(d);
+            innings[inningNum].deliveries.push(delivery);
         });
-        return Object.values(innings);
-    }
+        
+        // Sort deliveries by over and ball
+        Object.values(innings).forEach(inning => {
+            inning.deliveries.sort((a, b) => {
+                // Convert over and ball to numbers to ensure proper sorting
+                const aOver = Number(a.over) || 0;
+                const bOver = Number(b.over) || 0;
+                if (aOver !== bOver) return aOver - bOver;
+                
+                const aBall = Number(a.ball) || 0;
+                const bBall = Number(b.ball) || 0;
+                return aBall - bBall;
+            });
+        });
+        
+        // Convert to array and sort by inning number
+        const inningsArray = Object.values(innings).sort((a, b) => {
+            const aInning = Number(a.inning) || 0;
+            const bInning = Number(b.inning) || 0;
+            return aInning - bInning;
+        });
+        
+        console.log(`Created ${inningsArray.length} innings from deliveries`);
+        
+        // Get match ID reliably
+        let match_id = matchData.match_id;
+        if (!match_id && deliveries.length > 0) {
+            match_id = deliveries[0].match_id;
+        }
+        
+        // Use the match field for description if available
+        const displayName = matchData.match || matchData.description || `Match ${match_id || ''}`;
+        
+        // Return the processed data in the expected format
+        return {
+            match_id: match_id || 'unknown',
+            description: displayName,
+            match: matchData.match || null,
+            innings: inningsArray
+        };
+    };
 
     return (
         <div className="bg-gray-900 min-h-screen text-white font-sans p-4 md:p-8" style={{
@@ -636,10 +528,15 @@ export default function App() {
             backgroundSize: 'cover',
             backgroundPosition: 'center'
         }}>
+            {isLoading && <LoadingIndicator />}
+            
             <div className="max-w-4xl mx-auto">
                 <header className="text-center mb-6">
                     <h1 className="text-4xl md:text-5xl font-bold text-yellow-400 tracking-tight">IPL Predictor Challenge</h1>
-                    <p className="text-gray-300 mt-2">Relive classic matches and test your cricket instincts!</p>
+                    <p className="text-gray-300 mt-2">
+                        {isTestMode ? "(TEST MODE) " : "(API MODE) "}
+                        Relive classic matches and test your cricket instincts!
+                    </p>
                 </header>
                 
                 {!gameData && (
@@ -657,42 +554,14 @@ export default function App() {
                                 <label htmlFor="match" className="block text-sm font-medium text-gray-300 mb-1">2. Select Match</label>
                                 <select id="match" value={selectedMatch} onChange={e => setSelectedMatch(e.target.value)} disabled={!selectedSeason} className="w-full bg-gray-700 border-gray-600 rounded-md p-2 text-white disabled:opacity-50 disabled:cursor-not-allowed focus:ring-yellow-500 focus:border-yellow-500">
                                     <option value="">-- Choose Match --</option>
-                                    {availableMatchesForSeason.map((m, idx) => {
-                                                      // For debugging the raw object
-                                      console.log(`Match ${idx}:`, m);
-                                                          
-                                      
-                                      // Extract team names using the utility
-                                      const { batting_team, bowling_team } = getTeamNames(m);
-                                        
-                                        let displayValue = `${batting_team} v ${bowling_team}`;
-                                      } else {
-                                        // Fallback
-                                        displayValue = `Match ${m.match_id || 'Unknown'}`;
-                                      }
-                                      
-                                      // Create a unique key and value for the option
-                                      let key = '';
-                                      let value = '';
-                                      
-                                      if (Array.isArray(m) && m.length > 0) {
-                                        key = `match-${m[0].match_id}`;
-                                        value = m[0].match_id.toString();
-                                      } else if (m && m.match_id) {
-                                        key = `match-${m.match_id}`;
-                                        value = m.match_id.toString();
-                                      } else {
-                                        key = `match-unknown-${idx}`;
-                                        value = `unknown-${idx}`;
-                                      }
-                                      
-                                      // Log what we're actually rendering
-                                      console.log(`Rendering option ${idx}:`, {key, value, displayValue});
-                                      
-                                      return <option key={key} value={value}>
-                                        {displayValue}
-                                      </option>;
-                                    })}
+                                    {availableMatchesForSeason.map((m, idx) => (
+                                        <option 
+                                            key={m.match_id || `match-${idx}`}
+                                            value={m.match || m.description || `Match ${idx + 1}`}
+                                        >
+                                            {m.match || m.description || `Match ${idx + 1}`}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
@@ -721,14 +590,14 @@ export default function App() {
                            <div className="bg-gray-800/60 backdrop-blur-md p-6 rounded-xl shadow-2xl border border-gray-700">
                                <h3 className="text-center text-xl font-bold text-white mb-4">Predict the Next Ball!</h3>
                                <div className="grid grid-cols-3 gap-4 mb-4">
-                                   {['4', '6', 'wicket'].map(p => (
+                                   {['4', '6', 'Wicket'].map(p => (
                                        <button key={p} onClick={() => setPrediction(p.toLowerCase())} className={`p-4 rounded-lg text-xl font-bold transition-all duration-200 ${prediction === p.toLowerCase() ? 'bg-green-500 text-white ring-2 ring-white' : 'bg-gray-700 hover:bg-gray-600'}`}>
-                                           {p === 'wicket' ? 'Wicket' : p}
+                                           {p}
                                        </button>
                                    ))}
                                </div>
                                <button onClick={handleNextBall} disabled={isGameOver} className="w-full mt-4 bg-blue-600 text-white font-bold py-3 px-4 rounded-md hover:bg-blue-500 transition-colors duration-300 disabled:bg-gray-500 disabled:cursor-not-allowed shadow-lg text-lg">
-                                   {prediction ? 'Confirm Prediction (-1 Point)' : 'Bowl Next Ball (Free)'}
+                                   {prediction ? 'Confirm Prediction' : 'Bowl Next Ball'}
                                </button>
                            </div>
                         )}
@@ -740,6 +609,8 @@ export default function App() {
                         </div>
                     </div>
                 )}
+
+                {isLoading && <LoadingIndicator />}
             </div>
         </div>
     );

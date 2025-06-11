@@ -49,20 +49,73 @@ app.get('/api/matches/:season', (req, res) => {
             return res.status(500).json({ error: 'Failed to read matches' });
         }
         
-        // We'll create a simple description for each match
-        const matches = files
+        // Read match data from each file to get proper match names
+        const matchPromises = files
             .filter(file => file.endsWith('.json'))
             .map(file => {
                 const matchId = path.basename(file, '.json');
-                return {
-                    match_id: matchId,
-                    // In a real app, you might read a 'description' field from each file
-                    description: `Match ${matchId} (Season ${season})`
-                };
+                const filePath = path.join(seasonDir, file);
+                
+                return new Promise((resolve) => {
+                    fs.readFile(filePath, 'utf8', (err, data) => {
+                        // Default match object with fallback description
+                        let match = {
+                            match_id: matchId,
+                            description: `Match ${matchId} (Season ${season})`
+                        };
+                        
+                        if (!err) {
+                            try {
+                                const matchData = JSON.parse(data);
+                                
+                                // Check if match has a direct "match" field with team names
+                                if (matchData && typeof matchData === 'object' && matchData.match) {
+                                    match.match = `${matchData.match} (${matchId})`;
+                                }
+                                // If no direct match field but has deliveries with team information
+                                else if (matchData.deliveries && Array.isArray(matchData.deliveries) && matchData.deliveries.length > 0) {
+                                    const delivery = matchData.deliveries.find(d => d.batting_team && d.bowling_team);
+                                    if (delivery) {
+                                        match.match = `${delivery.batting_team} vs ${delivery.bowling_team} (${matchId})`;
+                                    }
+                                }
+                                // If it's an array of deliveries (old format)
+                                else if (Array.isArray(matchData) && matchData.length > 0) {
+                                    const delivery = matchData.find(d => d.batting_team && d.bowling_team);
+                                    if (delivery) {
+                                        match.match = `${delivery.batting_team} vs ${delivery.bowling_team} (${matchId})`;
+                                    }
+                                }
+                                
+                                // If still no match name, check if this is cricsheet format with "info" section
+                                if (!match.match && matchData && matchData.info && matchData.info.teams) {
+                                    match.match = `${matchData.info.teams[0]} vs ${matchData.info.teams[1]} (${matchId})`;
+                                }
+                                
+                                // If we still don't have a match name, use the description as fallback
+                                if (!match.match) {
+                                    match.match = match.description;
+                                }
+                            } catch (parseErr) {
+                                console.error(`Error parsing match ${matchId}:`, parseErr);
+                            }
+                        }
+                        
+                        resolve(match);
+                    });
+                });
             });
-            
-        console.log(`Found ${matches.length} matches for season ${season}`);
-        res.json(matches);
+              
+        // Wait for all match information to be processed
+        Promise.all(matchPromises)
+            .then(matches => {
+                console.log(`Found ${matches.length} matches for season ${season}`);
+                res.json(matches);
+            })
+            .catch(err => {
+                console.error(`Error processing matches for season ${season}:`, err);
+                res.status(500).json({ error: 'Failed to process matches' });
+            });
     });
 });
 
